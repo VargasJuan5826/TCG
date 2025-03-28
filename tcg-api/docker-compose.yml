@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    environment:
+      - DB_HOST=db
+      - DB_USER=tgc_user
+      - DB_PASSWORD=tgc_password
+      - DB_NAME=tgc_db
+      - DB_PORT=3306
+    networks:
+      - tgc-network
+
+  db:
+    image: mysql:8.0
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      - MYSQL_ROOT_PASSWORD=root_password
+      - MYSQL_DATABASE=tgc_db
+      - MYSQL_USER=tgc_user
+      - MYSQL_PASSWORD=tgc_password
+    volumes:
+      - db-data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    networks:
+      - tgc-network
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    depends_on:
+      - db
+    ports:
+      - "8081:80"
+    environment:
+      - PMA_HOST=db
+      - PMA_USER=tgc_user
+      - PMA_PASSWORD=tgc_password
+    networks:
+      - tgc-network
+
+networks:
+  tgc-network:
+    driver: bridge
+
+volumes:
+  db-data:
